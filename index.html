@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A Dialogue with Aristotle</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="app">
+
+    <!-- ===== Left panel: Aristotle portrait + state info ===== -->
+    <aside id="portrait-panel">
+      <div id="portrait-frame">
+        <img
+          id="aristotle-img"
+          src="../images/neutral.png"
+          alt="Aristotle"
+          onerror="this.style.display='none'; document.getElementById('portrait-fallback').style.display='flex';"
+        />
+        <div id="portrait-fallback" aria-hidden="true">
+          <span class="fallback-initial">Α</span>
+        </div>
+      </div>
+
+      <div id="state-info">
+        <div class="state-row">
+          <span class="state-label">Topic</span>
+          <span id="state-topic" class="state-value">—</span>
+        </div>
+        <div class="state-row">
+          <span class="state-label">Stage</span>
+          <span id="state-stage" class="state-value">—</span>
+        </div>
+        <div class="state-row">
+          <span class="state-label">Tone</span>
+          <span id="state-tone" class="state-value">—</span>
+        </div>
+      </div>
+
+      <div id="topic-progress">
+        <div class="topic-pip" data-topic="eudaimonia"        title="Eudaimonia">I</div>
+        <div class="topic-pip" data-topic="doctrine_of_mean"  title="Doctrine of the Mean">II</div>
+        <div class="topic-pip" data-topic="habit_and_practice" title="Habit &amp; Practice">III</div>
+        <div class="topic-pip" data-topic="phronesis"         title="Phronesis">IV</div>
+      </div>
+    </aside>
+
+    <!-- ===== Right panel: conversation ===== -->
+    <main id="chat-panel">
+
+      <header id="chat-header">
+        <h1>A Dialogue with Aristotle</h1>
+        <p id="chat-subtitle">On the Nature of Virtue and the Good Life</p>
+      </header>
+
+      <div id="chat-history" role="log" aria-live="polite" aria-label="Conversation">
+        <!-- messages injected here by script.js -->
+      </div>
+
+      <div id="typing-indicator" class="hidden" aria-label="Aristotle is thinking">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+
+      <form id="chat-form" autocomplete="off">
+        <textarea
+          id="user-input"
+          rows="3"
+          placeholder="Speak your thoughts, student…"
+          aria-label="Your response"
+          maxlength="1200"
+        ></textarea>
+        <button type="submit" id="submit-btn" aria-label="Send">
+          <span id="btn-label">Send</span>
+          <span id="btn-spinner" class="hidden">…</span>
+        </button>
+      </form>
+
+      <div id="terminal-banner" class="hidden" role="alert"></div>
+
+    </main>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

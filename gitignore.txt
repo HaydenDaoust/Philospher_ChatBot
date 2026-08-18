@@ -1,0 +1,28 @@
+# Environment — never commit
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# ChromaDB local store (regenerate with loader.py)
+chroma_db/
+
+# Sentence-transformer cache
+.cache/
+huggingface/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

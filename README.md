@@ -1,0 +1,169 @@
+# Aristotle Philosophy Chatbot
+
+A conversational web application that simulates a Socratic dialogue with Aristotle
+about virtue ethics. The app uses retrieval-augmented generation (RAG) grounded in
+the *Nicomachean Ethics*, a state machine that drives conversation flow and tone,
+and a two-step LLM pipeline (classifier → generator) powered by the OpenAI API.
+
+---
+
+## Quick Start
+
+### 1. Clone and enter the project
+
+```bash
+cd aristotle-chatbot
+```
+
+### 2. Create and activate a virtual environment
+
+```bash
+python -m venv venv
+source venv/bin/activate      # Windows: venv\Scripts\activate
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Set your OpenAI API key
+
+```bash
+cp .env.example .env
+# Edit .env and replace `your_openai_api_key_here` with your real key
+```
+
+### 5. Download the source text
+
+```bash
+curl -o texts/nicomachean_ethics.txt \
+  "http://classics.mit.edu/Aristotle/nicomachaen.mb.txt"
+```
+
+See `texts/README.txt` for alternatives if curl is unavailable.
+
+### 6. Add portrait images *(optional but recommended)*
+
+Place `neutral.png`, `approving.png`, `skeptical.png`, `disappointed.png`,
+and `probing.png` in the `images/` folder.
+See `images/README.txt` for sizing guidance.
+The UI falls back gracefully if images are missing.
+
+### 7. Load the text into ChromaDB (run once)
+
+```bash
+python backend/loader.py
+```
+
+This chunks the Nicomachean Ethics (~400 words per chunk, 60-word overlap),
+tags each chunk with a topic, generates embeddings with `all-MiniLM-L6-v2`,
+and stores everything in a local `chroma_db/` directory.
+
+### 8. Start the server
+
+```bash
+uvicorn backend.main:app --reload
+```
+
+### 9. Open the app
+
+Navigate to **http://localhost:8000/static/index.html** in your browser.
+
+---
+
+## Architecture
+
+```
+aristotle-chatbot/
+├── backend/
+│   ├── main.py          # FastAPI app — POST /chat, session management
+│   ├── state_machine.py # Conversation state: topic, stage, tone, counters
+│   ├── classifier.py    # LLM call 1 — classifies student input (JSON output)
+│   ├── generator.py     # LLM call 2 — generates Aristotle's response
+│   ├── retriever.py     # ChromaDB topic-filtered vector search
+│   ├── loader.py        # One-time text chunking + embedding + DB load
+│   └── prompts.py       # All prompt templates in one place
+├── frontend/
+│   ├── index.html       # Two-column layout
+│   ├── style.css        # Pottery palette, tone-aware styling, responsive
+│   └── script.js        # Session UUID, API calls, UI state management
+├── texts/
+│   └── nicomachean_ethics.txt   # (you provide this — see texts/README.txt)
+├── images/
+│   └── *.png            # Tone portrait images (you provide these)
+├── .env                 # Your API key (never commit)
+├── .env.example         # Template
+├── .gitignore
+└── requirements.txt
+```
+
+---
+
+## Conversation Flow
+
+```
+Student submits input
+        │
+        ▼
+  classify(input)          ← gpt-4o, returns one of 6 categories
+        │
+        ▼
+  state.transition()       ← updates topic / stage / tone / counters
+        │
+        ▼
+  retrieve(input, topic)   ← ChromaDB, top-4 chunks filtered by topic
+        │
+        ▼
+  generate(state, chunks)  ← gpt-4o, Aristotle character + RAG context
+        │
+        ▼
+  { response, tone, topic, stage, is_terminal, terminal_type }
+```
+
+---
+
+## State Machine
+
+| Component | Values |
+|-----------|--------|
+| **Topic** | `eudaimonia` → `doctrine_of_mean` → `habit_and_practice` → `phronesis` |
+| **Stage** | `introduction` → `examination` → `challenge` → `resolution` |
+| **Tone**  | `neutral` · `approving` · `skeptical` · `disappointed` · `probing` |
+
+**Confusion counter** (resets per topic):
+- 1–2 confusions → disappointed/skeptical tone, Aristotle rephrases
+- 3 confusions → reset to examination, restart from basics
+- 4 confusions → **DISMISSED** (terminal)
+
+**Correct streak** (resets per topic):
+- 1–2 correct → approving tone
+- 3+ correct → challenge stage skipped, jump to resolution
+
+**Terminal states:**
+- **END** — student completes all four topics; Aristotle delivers a benediction
+- **DISMISSED** — confusion_count hits 4 on any topic
+
+---
+
+## Classifier Categories
+
+| Category | When used |
+|----------|-----------|
+| `demonstrates_understanding` | Student clearly grasps the concept |
+| `offers_surprising_insight` | Unexpected but relevant connection |
+| `expresses_confusion` | Student is lost or uncertain |
+| `asks_clarifying_question` | Student asks for definition/explanation |
+| `minimal_or_evasive` | Vague or non-committal answer |
+| `off_topic_or_anachronistic` | Outside Aristotle's world |
+
+---
+
+## Development Notes
+
+- **Edit prompts** in `backend/prompts.py` — no need to touch logic files
+- **Re-run loader** only if you change the source text or chunking parameters
+- **State machine** has no LLM dependency — test it in isolation first
+- **Session state** lives in a server-side Python dict; restart the server to reset all sessions
+- **CORS** is open (`*`) for local development — tighten this for any deployment
