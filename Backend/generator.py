@@ -8,8 +8,8 @@ Returns Aristotle's reply as a plain string.
 import os
 
 from openai import OpenAI
-from prompts import GENERATOR_SYSTEM, build_generator_prompt
-from state_machine import State
+from Backend.prompts import GENERATOR_SYSTEM, build_generator_prompt
+from Backend.state_machine import State
 
 _client: OpenAI | None = None
 

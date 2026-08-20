@@ -7,7 +7,7 @@ import json
 import os
 
 from openai import OpenAI
-from prompts import CLASSIFIER_SYSTEM, CLASSIFIER_USER
+from Backend.prompts import CLASSIFIER_SYSTEM, CLASSIFIER_USER
 
 VALID_CLASSIFICATIONS = {
     "demonstrates_understanding",

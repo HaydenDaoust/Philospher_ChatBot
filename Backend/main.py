@@ -35,10 +35,10 @@ from pydantic import BaseModel, Field
 # Load .env before importing anything that reads OPENAI_API_KEY
 load_dotenv()
 
-from classifier import classify          # noqa: E402
-from generator import generate           # noqa: E402
-from retriever import retrieve           # noqa: E402
-from state_machine import State          # noqa: E402
+from Backend.classifier import classify          # noqa: E402
+from Backend.generator import generate           # noqa: E402
+from Backend.retriever import retrieve           # noqa: E402
+from Backend.state_machine import State          # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Session store  (in-memory — sufficient for single-user / demo use)
